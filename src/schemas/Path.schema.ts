@@ -5,19 +5,24 @@ import { AirBus } from "./AirBus.schema";
 import { City } from "./City.schema";
 import { Trip } from "./Trip.schema";
 import { Order } from "./Order.schema";
+import { SeatClass } from "./SeatClass.schema";
 
 
 @Entity()
 export class Path {
-    @PrimaryGeneratedColumn()
-    id: number;
+    @PrimaryGeneratedColumn('uuid')
+    uid: string;
 
     @Column()
     departure_time: number
 
-    @Column()
+    @Column({default:0})
     arrival_time: number
 
+
+
+
+    
 
 
     @ManyToOne(() => City, (city) => city.departure_trips, {onDelete:'CASCADE'})
@@ -27,16 +32,19 @@ export class Path {
     arrival_city: City
 
 
+   
+
+
     @ManyToMany(() => Trip)
     @JoinTable()
     trips: Trip[]
 
 
     @OneToOne(() => Order, (order) => order.from, {onDelete:'CASCADE'})
-    order_from: Path
+    order_from: Order
 
     @OneToOne(() => Order, (order) => order.to, {onDelete:'CASCADE'})
-    order_to: Path
+    order_to: Order
 
 
 

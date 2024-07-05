@@ -17,6 +17,10 @@ import { Order } from 'src/schemas/Order.schema';
 import { Path } from 'src/schemas/Path.schema';
 import { Trip } from 'src/schemas/Trip.schema';
 import { User } from 'src/schemas/User.schema';
+import { SeatClass } from 'src/schemas/SeatClass.schema';
+import { SeatClassController } from './seat-class/seat-class.controller';
+import { SeatClassService } from './seat-class/seat-class.service';
+
 
 @Module({
     controllers:[
@@ -24,10 +28,12 @@ import { User } from 'src/schemas/User.schema';
        CityController,
        CompanyController,
        PathController,
-       TripController
+       SeatClassController,
+       TripController,
     ],
     providers:[
        AirbusService,
+       SeatClassService,
        CityService,
        CompanyService,
        PathService,
@@ -35,7 +41,7 @@ import { User } from 'src/schemas/User.schema';
     ],
     imports:[
       TypeOrmModule.forFeature([
-
+         SeatClass,
          AirBus,
          City,
          Company,
@@ -46,7 +52,8 @@ import { User } from 'src/schemas/User.schema';
        
     
        ]),
-    ]
+    ],
+  
 })
 export class FlightModule {
 

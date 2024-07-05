@@ -5,8 +5,8 @@ import { Trip } from "./Trip.schema";
 
 @Entity()
 export class Company {
-    @PrimaryGeneratedColumn()
-    id: number;
+    @PrimaryGeneratedColumn('uuid')
+    uid: string;
 
     @Column()
     name: string

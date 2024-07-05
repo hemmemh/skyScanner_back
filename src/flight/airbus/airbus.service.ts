@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import {airBusesArray } from 'src/data/dataForDb';
 import { AirBus } from 'src/schemas/AirBus.schema';
 import { Repository } from 'typeorm';
 
@@ -13,9 +14,21 @@ export class AirbusService {
         private AirBusRepo: Repository<AirBus>,
       ) {}
 
-    async createAirBus(airBus:AirBus) {
-        return this.AirBusRepo.create(airBus);
- 
+    async createAirBus(airBus:AirBus): Promise<AirBus> {
+        return this.AirBusRepo.save(airBus);
+      }
+
+      async getAllAirBus(): Promise<AirBus[]> {
+        return this.AirBusRepo.find({})
+      }  
+
+
+      async createManyAirBus(): Promise<AirBus[]> {
+        const airBuses = airBusesArray
+        for(const airBus of airBuses){
+           await this.AirBusRepo.save(airBus);
+        }
+         return this.getAllAirBus()
       }
 
 

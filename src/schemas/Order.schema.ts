@@ -9,8 +9,8 @@ import { User } from "./User.schema";
 
 @Entity()
 export class Order {
-    @PrimaryGeneratedColumn()
-    id: number;
+    @PrimaryGeneratedColumn('uuid')
+    uid: string;
 
 
     @OneToOne(() => Path, (path) => path.order_to, {cascade:true})

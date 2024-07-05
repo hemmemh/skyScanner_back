@@ -1,4 +1,4 @@
 export class registerDTO {
     email:string
-    password:number
+    password:string
 }

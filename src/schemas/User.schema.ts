@@ -9,15 +9,15 @@ import { Order } from "./Order.schema";
 
 @Entity()
 export class User {
-    @PrimaryGeneratedColumn()
-    id: number;
+    @PrimaryGeneratedColumn('uuid')
+    uid: string;
 
     @Column()
     email: string
 
 
     @Column()
-    password: number
+    password: string
 
 
     @OneToMany(() => Order, (order) => order.user, {cascade:true})

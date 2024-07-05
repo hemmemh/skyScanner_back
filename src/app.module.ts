@@ -12,10 +12,11 @@ import { User } from './schemas/User.schema';
 import { FlightModule } from './flight/flight.module';
 import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
-import { UserController } from './flight/user/user.controller';
-import { UserService } from './flight/user/user.service';
 import { APP_GUARD } from '@nestjs/core';
-import { JwtGuard } from './auth/guards/JwtGuard';
+import { JwtAuthGuard } from './auth/guards/JwtGuard';
+import { SeatClass } from './schemas/SeatClass.schema';
+import { UserModule } from './user/user.module';
+
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -29,6 +30,7 @@ import { JwtGuard } from './auth/guards/JwtGuard';
       password: process.env.POSTGRESQL_PASS,
       database: process.env.POSTGRESQL_DB,
       entities: [
+        SeatClass,
         AirBus,
         City,
         Company,
@@ -37,12 +39,13 @@ import { JwtGuard } from './auth/guards/JwtGuard';
         Trip,
         User
       ],
-      synchronize: false,
+      synchronize: true,
     }),
     FlightModule,
-    AuthModule
+    AuthModule,
+    UserModule
   ],
-  controllers: [AppController, UserController],
-  providers: [AppService,{provide:APP_GUARD, useClass:JwtGuard}, UserService],
+  controllers: [AppController],
+  providers: [AppService,{provide:APP_GUARD, useClass:JwtAuthGuard}],
 })
 export class AppModule {}
