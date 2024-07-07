@@ -1,4 +1,4 @@
-import { Controller, Post } from '@nestjs/common';
+import { Controller, Get, Post } from '@nestjs/common';
 import { TripService } from './trip.service';
 import { Public } from 'src/auth/guards/JwtGuard';
 
@@ -11,5 +11,11 @@ export class TripController {
     @Post('createMany')
     createMany() {
       return this.tripService.createMany();
+    }
+
+
+    @Get()
+    getAll() {
+      return this.tripService.getAll();
     }
 }

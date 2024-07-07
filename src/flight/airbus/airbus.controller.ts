@@ -1,4 +1,4 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Get, Post } from '@nestjs/common';
 import { AirBus } from 'src/schemas/AirBus.schema';
 import { AirbusService } from './airbus.service';
 import { Public } from 'src/auth/guards/JwtGuard';
@@ -14,6 +14,12 @@ export class AirbusController {
     @Post()
     createAirBus(@Body() dto: AirBus) {
       return this.airbusService.createAirBus(dto);
+    }
+
+
+    @Get()
+    getAll() {
+      return this.airbusService.getAllAirBus();
     }
 
 

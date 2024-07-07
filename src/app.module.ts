@@ -13,9 +13,9 @@ import { FlightModule } from './flight/flight.module';
 import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
 import { APP_GUARD } from '@nestjs/core';
-import { JwtAuthGuard } from './auth/guards/JwtGuard';
 import { SeatClass } from './schemas/SeatClass.schema';
 import { UserModule } from './user/user.module';
+import { JwtGuard } from './auth/guards/JwtGuard';
 
 @Module({
   imports: [
@@ -46,6 +46,6 @@ import { UserModule } from './user/user.module';
     UserModule
   ],
   controllers: [AppController],
-  providers: [AppService,{provide:APP_GUARD, useClass:JwtAuthGuard}],
+  providers: [AppService,{provide:APP_GUARD, useClass:JwtGuard}],
 })
 export class AppModule {}
