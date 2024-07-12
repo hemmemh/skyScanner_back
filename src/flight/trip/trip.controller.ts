@@ -1,6 +1,7 @@
-import { Controller, Get, Post } from '@nestjs/common';
+import { Controller, Get, Post, Query } from '@nestjs/common';
 import { TripService } from './trip.service';
 import { Public } from 'src/auth/guards/JwtGuard';
+import { getAllTripsDTO } from './DTO/getAllTripsDTO';
 
 @Controller('trip')
 @Public()
@@ -15,7 +16,7 @@ export class TripController {
 
 
     @Get()
-    getAll() {
-      return this.tripService.getAll();
+    getAll(@Query() query: getAllTripsDTO) {
+      return this.tripService.getAll(query);
     }
 }

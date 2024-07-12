@@ -1,4 +1,4 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Get, Post } from '@nestjs/common';
 import { City } from 'src/schemas/City.schema';
 import { CityService } from './city.service';
 import { Public } from 'src/auth/guards/JwtGuard';
@@ -13,9 +13,13 @@ export class CityController {
 
     @Post()
     createCity(@Body() dto:City) {
-        console.log('dto', dto);
-        
       return this.cityService.createCity(dto)
+    }
+
+
+    @Get('getAll')
+    getAll(@Body() dto:City) {
+      return this.cityService.getAll()
     }
 
 

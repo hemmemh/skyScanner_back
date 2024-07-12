@@ -1,4 +1,4 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Get, Post } from '@nestjs/common';
 import { SeatClassService } from './seat-class.service';
 import { SeatClass } from 'src/schemas/SeatClass.schema';
 import { Public } from 'src/auth/guards/JwtGuard';
@@ -15,6 +15,11 @@ export class SeatClassController {
     @Post()
     createSeatClass(@Body() dto: SeatClass) {
       return this.seatClassService.createSeatClass(dto);
+    }
+
+    @Get('getAll')
+    getAll() {
+      return this.seatClassService.getAll();
     }
 
     @Post('createMany')
