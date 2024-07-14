@@ -18,7 +18,7 @@ export class AirbusService {
         return this.AirBusRepo.save(airBus);
       }
 
-      async getAllAirBus(): Promise<AirBus[]> {
+      async getAll(): Promise<AirBus[]> {
         return this.AirBusRepo.find({})
       }  
 
@@ -28,7 +28,7 @@ export class AirbusService {
         for(const airBus of airBuses){
            await this.AirBusRepo.save(airBus);
         }
-         return this.getAllAirBus()
+         return this.getAll()
       }
 
 

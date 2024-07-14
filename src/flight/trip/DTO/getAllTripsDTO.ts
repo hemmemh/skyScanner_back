@@ -5,4 +5,7 @@ export class getAllTripsDTO {
     return: string
     seatNumber: string
     seatClass: string
+    sort:Sort
 }
+
+export type Sort =  'optimal' | 'cheapest' | 'fastest'

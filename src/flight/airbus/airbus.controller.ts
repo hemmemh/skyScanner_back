@@ -19,7 +19,7 @@ export class AirbusController {
 
     @Get()
     getAll() {
-      return this.airbusService.getAllAirBus();
+      return this.airbusService.getAll();
     }
 
 
