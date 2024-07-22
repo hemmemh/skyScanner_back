@@ -27,7 +27,9 @@ export const getRandomElementFromArray=(arr:any[])=> {
     return Math.floor(Math.random() * (max - min + 1)) + min; // включительно обоих концов
   }
 
-  export  const getArrayCombinations= <T>(a:T[], b:T[]):[T,T][]=> {
+  export  const getArrayCombinations= <T>(a:T[][], b:T[][]):[T[],T[]][]=> {
+    console.log('g', a,'i', b);
+    
     let combinations = [];
     for (let i = 0; i < a.length; i++) {
         for (let j = 0; j < b.length; j++) {
