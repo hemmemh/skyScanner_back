@@ -5,6 +5,9 @@ import { User } from 'src/schemas/User.schema';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
+import { validate } from 'class-validator';
+import { AccessToken } from 'src/auth/types/accessToken';
+import { Response } from 'express';
 @Injectable()
 export class UserService {
 
@@ -51,9 +54,32 @@ export class UserService {
 
 
 
+      async logout(res:any) {
+        try {
+
+          res.clearCookie('')
+          return res.status(200).send({ message: 'Successfully logged out' });
+        } catch (error) {
+          throw new BadRequestException('User not found');
+        }
+   
+      }
+
+      async delete(id:string){
+       try {
+        return this.UserRepo.delete(id)
+       } catch (error) {
+        throw new BadRequestException('User not found');
+       }
+      }
+
       async verify(user: User): Promise<AccessToken> {
-        const payload = { email: user.email, uid: user.uid,  };
-        return { access_token: this.jwtService.sign(payload) };
+        const payload = { email: user.email, uid: user.uid};
+        return { 
+          access_token: this.jwtService.sign(payload),
+          user
+
+         };
       }
 
 
@@ -64,9 +90,13 @@ export class UserService {
           throw new BadRequestException('email already exists');
         }
         const hashedPassword = await bcrypt.hash(user.password, 10);
-    
+
        const newUser =  await this.create({...user, password:hashedPassword});
         return this.verify(newUser);
+      }
+
+      async getProfile(user:User){
+        return this.validateUser(user.email)
       }
 
 }

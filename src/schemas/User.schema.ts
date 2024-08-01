@@ -5,6 +5,7 @@ import { AirBus } from "./AirBus.schema";
 import { City } from "./City.schema";
 import { Path } from "./Path.schema";
 import { Order } from "./Order.schema";
+import { IsEmail } from "class-validator";
 
 
 @Entity()
@@ -13,6 +14,7 @@ export class User {
     uid: string;
 
     @Column()
+    @IsEmail()
     email: string
 
 
@@ -20,7 +22,7 @@ export class User {
     password: string
 
 
-    @OneToMany(() => Order, (order) => order.user, {cascade:true})
+    @OneToMany(() => Order, (order) => order.user, {eager:true,cascade:true})
     orders: Order[]
 
 

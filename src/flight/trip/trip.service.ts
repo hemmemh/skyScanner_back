@@ -11,10 +11,12 @@ import { CompanyService } from '../company/company.service';
 import { AirBus } from 'src/schemas/AirBus.schema';
 import { AirbusService } from '../airbus/airbus.service';
 import { SeatClass } from 'src/schemas/SeatClass.schema';
-import { getArrayCombinations, getRandomElementFromArray, getRandomInteger, isSameDay } from './lib/lib';
+import { getArrayCombinations, getMinMaxDepartureTime, getMinMaxTime, getRandomElementFromArray, getRandomInteger, isSameDay } from './lib/lib';
 import { City } from 'src/schemas/City.schema';
 import { getTripsWithReturnsDTO } from './DTO/getTripsWithReturnsDTO';
 import { getTripsDTO } from './DTO/getTripsDTO';
+import { SeatClassService } from '../seat-class/seat-class.service';
+import { getAllData } from './DTO/getAllData';
 
 
 
@@ -26,6 +28,7 @@ export class TripService {
         private TripRepo: Repository<Trip>,
         private cityService:CityService,
         private companyService:CompanyService,
+        private seatClassService:SeatClassService,
         private airbusService:AirbusService,
     ){}
 
@@ -194,7 +197,7 @@ export class TripService {
        
       }
 
-      async getAll(query:getAllTripsDTO, departDate:number): Promise<Trip[][]> {
+      async getAll(query:getAllTripsDTO, departDate:number): Promise<getAllData> {
        try {
 
         let resultTrips:Trip[][] = []
@@ -236,7 +239,7 @@ export class TripService {
     
 
         switch (query.sort) {
-          case 'optimal': return resultTrips.sort((a,b)=>{
+          case 'optimal': resultTrips.sort((a,b)=>{
             const AlastIndex = a.length - 1
             const BlastIndex = b.length - 1
       
@@ -252,12 +255,12 @@ export class TripService {
             return optimalityA - optimalityB;
 
           })
-          case 'cheapest': return resultTrips.sort((a,b)=>{
+          case 'cheapest': resultTrips.sort((a,b)=>{
             const sumPriceA = a.reduce((prev:0, current:Trip)=> current.price + prev ,0)
             const sumPriceb = b.reduce((prev:0, current:Trip)=> current.price + prev ,0)
           return sumPriceA -  sumPriceb
           })
-          case 'fastest': return resultTrips.sort((a,b)=>{
+          case 'fastest': resultTrips.sort((a,b)=>{
             const AlastIndex = a.length - 1
             const BlastIndex = b.length - 1
             const first = a[AlastIndex].arrival_time - a[0].departure_time
@@ -267,13 +270,25 @@ export class TripService {
           default:
             break;
         }
+        const {minTime, maxTime} = getMinMaxTime(resultTrips)
+        const {minDepartureTime, maxDepartureTime} = getMinMaxDepartureTime(resultTrips)
+        return {
+          trips:resultTrips,
+          minTime,
+          maxTime,
+          minDepartureTime,
+          maxDepartureTime
+
+
+         }
+
        } catch (error) {
  
         
         throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
        }
      
-
+   
       }  
 
 
@@ -310,6 +325,8 @@ export class TripService {
 
     async getTrips(depart:string): Promise<Trip[]>{
        try {
+        console.log('depart.split(',')', depart.split(','));
+        
         const trips = []
         for(const tripUid of depart.split(',')){
           const trip =await this.TripRepo.findOne({where:{uid:tripUid}})
@@ -328,6 +345,7 @@ export class TripService {
         const cities = await this.cityService.getAll()
         const companies  = await this.companyService.getAll()
         const airBuses  = await this.airbusService.getAll()
+        const seatClass =  await this.seatClassService.getOneByName('эконом класс')
         while(numbers > 0){
           const departure_time = getRandomInteger(startDate, endDate)
           const arrival_time = getRandomInteger(departure_time,departure_time + 18000000)
@@ -341,14 +359,9 @@ export class TripService {
           const arrival_city = getRandomElementFromArray(newCities)
           const company = getRandomElementFromArray(companies)
           const airBus = getRandomElementFromArray(airBuses)
-      
+  
          
-         const  seatClass:SeatClass =  {
-          "name": "эконом класс",
-          "multiplier": 1,
-          "uid": "69cea099-b745-4fa8-921a-1e33d0948d79",
-          trips:[]
-      }
+     
         
          await this.TripRepo.save({
             seats,

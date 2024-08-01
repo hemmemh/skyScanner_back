@@ -22,14 +22,14 @@ export class TripController {
     }
 
 
-    @Get(':depart/:return')
+    @Get('getAllWithReturn/:depart/:return')
     getAllWithReturn(@Param('depart') departDate: number, @Param('return') returnDate: number, @Query() query: getAllTripsDTO) {
-      console.log('dd', departDate, returnDate, query);
+      console.log('ddf', departDate, returnDate, query);
       
       return this.tripService.getAllWithReturn(query, departDate, returnDate);
     }
 
-    @Get(':depart')
+    @Get('getAll/:depart')
     getAll(@Param('depart') departDate: number,  @Query() query: getAllTripsDTO) {
       return this.tripService.getAll(query, departDate);
     }
@@ -43,6 +43,8 @@ export class TripController {
 
     @Get('getTrips/:depart')
     getTrips(@Param('depart') departDate: string) {
+      console.log('dd', departDate);
+      
       return this.tripService.getTrips(departDate);
     }
 

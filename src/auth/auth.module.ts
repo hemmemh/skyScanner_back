@@ -21,7 +21,7 @@ import { secret } from './lib/jwt';
     JwtModule.register({
       global: true,
       secret: secret,
-      signOptions: { expiresIn: '5m' },
+      signOptions: { expiresIn: '20m' },
     }),
   ],
   controllers: [],

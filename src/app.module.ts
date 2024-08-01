@@ -16,11 +16,12 @@ import { APP_GUARD } from '@nestjs/core';
 import { SeatClass } from './schemas/SeatClass.schema';
 import { UserModule } from './user/user.module';
 import { JwtGuard } from './auth/guards/JwtGuard';
+import { OrderModule } from './order/order.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
-      envFilePath:'.env',
+      envFilePath: process.env.ENV === 'production' ? '.prod.env' : '.env',
     }),
     TypeOrmModule.forRoot({
       type: 'postgres',
@@ -43,7 +44,8 @@ import { JwtGuard } from './auth/guards/JwtGuard';
     }),
     FlightModule,
     AuthModule,
-    UserModule
+    UserModule,
+    OrderModule
   ],
   controllers: [AppController],
   providers: [AppService,{provide:APP_GUARD, useClass:JwtGuard}],

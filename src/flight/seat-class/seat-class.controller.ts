@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { SeatClassService } from './seat-class.service';
 import { SeatClass } from 'src/schemas/SeatClass.schema';
 import { Public } from 'src/auth/guards/JwtGuard';
@@ -20,6 +20,11 @@ export class SeatClassController {
     @Get('getAll')
     getAll() {
       return this.seatClassService.getAll();
+    }
+
+    @Get('getOne/:id')
+    getOne(@Param('id') id:string) {
+      return this.seatClassService.getOne(id);
     }
 
     @Post('createMany')

@@ -5,6 +5,7 @@ import { AirBus } from "./AirBus.schema";
 import { City } from "./City.schema";
 import { Path } from "./Path.schema";
 import { SeatClass } from "./SeatClass.schema";
+import { Order } from "./Order.schema";
 
 
 @Entity()
@@ -45,7 +46,7 @@ export class Trip {
     @ManyToOne(() => City, (city) => city.arrival_trips, {eager:true,onDelete:'CASCADE'})
     arrival_city: City
 
-    @ManyToMany(() => Path)
-    paths: Path[]
+    @ManyToMany(() => Order, {cascade:true})
+    orders: Order[]
 
 }
