@@ -4,19 +4,20 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { tripArray } from 'src/data/dataForDb';
 import { Trip } from 'src/schemas/Trip.schema';
 import { Any, Between, In, MoreThanOrEqual, Not, Repository } from 'typeorm';
-import { getAllTripsDTO } from './DTO/getAllTripsDTO';
+import { getAllTripsDTO, StopValue } from './DTO/getAllTripsDTO';
 import * as dayjs from 'dayjs'
 import { CityService } from '../city/city.service';
 import { CompanyService } from '../company/company.service';
 import { AirBus } from 'src/schemas/AirBus.schema';
 import { AirbusService } from '../airbus/airbus.service';
 import { SeatClass } from 'src/schemas/SeatClass.schema';
-import { getArrayCombinations, getMinMaxDepartureTime, getMinMaxTime, getRandomElementFromArray, getRandomInteger, isSameDay } from './lib/lib';
+import { getArrayCombinations, getMinMaxDepartureTime, getMinMaxDepartureTimeWithReturn, getMinMaxTime, getMinMaxTimeWithReturn, getRandomElementFromArray, getRandomInteger, isSameDay } from './lib/lib';
 import { City } from 'src/schemas/City.schema';
 import { getTripsWithReturnsDTO } from './DTO/getTripsWithReturnsDTO';
 import { getTripsDTO } from './DTO/getTripsDTO';
 import { SeatClassService } from '../seat-class/seat-class.service';
 import { getAllData } from './DTO/getAllData';
+import { getAllWithReturnData } from './DTO/getAllWithReturnData';
 
 
 
@@ -34,7 +35,7 @@ export class TripService {
 
 
 
-    async getAllWithReturn(query:getAllTripsDTO, departDate:number, returnDate:number): Promise<[Trip[], Trip[]][]> {
+    async getAllWithReturn(query:getAllTripsDTO, departDate:number, returnDate:number): Promise<getAllWithReturnData> {
        
         try {
           let resultDepartTrips:Trip[][] = []
@@ -96,20 +97,64 @@ export class TripService {
             
 
   
-          const trips =   getArrayCombinations<Trip>(resultDepartTrips ,resultReturnTrips )
+          let trips =   getArrayCombinations<Trip>(resultDepartTrips ,resultReturnTrips )
 
   
           switch (query.sort) {
-            case 'optimal': return trips
-           // case 'cheapest': return trips.sort((a,b)=>(a[0].price + a[1].price) - (b[0].price + b[1].price))
-           // case 'fastest': return trips.sort((a,b)=>{
-           //   const first = Math.max(a[0].arrival_time -a[0].departure_time,a[1].arrival_time - a[1].departure_time )
-           //   const second = Math.max(b[0].arrival_time -b[0].departure_time,b[1].arrival_time - b[1].departure_time )
-          //    return first - second
-           // })
+            case 'optimal': trips.sort((a,b)=>{
+              const weightPrice =1000; // вес цены
+              const weightDuration = 0.5; // вес времени полета
+
+              const AlastIndex = a[0].length - 1
+              const BlastIndex = b[0].length - 1
+              const first = +a[0][AlastIndex].arrival_time - +a[0][0].departure_time
+              const second = +b[0][BlastIndex].arrival_time - +b[0][0].departure_time
+              const sumPriceA = a[0].reduce((prev:0, current:Trip)=> current.price + prev ,0)
+              const sumPriceb = b[0].reduce((prev:0, current:Trip)=> current.price + prev ,0)
+              const optimalityA = weightPrice * sumPriceA + weightDuration * first;
+              const optimalityB = weightPrice * sumPriceb + weightDuration * second;
+              return optimalityA - optimalityB;
+  
+            })
+            break
+           case 'cheapest': trips.sort((a,b)=>{
+            const sumPriceOtboundA = a[0].reduce((prev:0, current:Trip)=> current.price + prev ,0)
+            const sumPriceReturnA = a[1].reduce((prev:0, current:Trip)=> current.price + prev ,0)
+            console.log('GG', sumPriceOtboundA + sumPriceReturnA);
+            
+            const sumPriceOtboundB = b[0].reduce((prev:0, current:Trip)=> current.price + prev ,0)
+            const sumPriceReturnB = b[1].reduce((prev:0, current:Trip)=> current.price + prev ,0)
+          return (sumPriceOtboundA + sumPriceReturnA) -  (sumPriceOtboundB + sumPriceReturnB)
+          })
+          break
+           case 'fastest':trips.sort((a,b)=>{
+            const AlastIndexOutBound = a[0].length - 1
+            const BlastIndexOutBound = b[0].length - 1
+            const firstOutBound = a[0][AlastIndexOutBound].arrival_time - a[0][0].departure_time
+            const secondOutBound =b[0][BlastIndexOutBound].arrival_time - b[0][0].departure_time
+
+            const AlastIndexReturn = a[1].length - 1
+            const BlastIndexReturn = b[1].length - 1
+            const firstReturn = a[1][AlastIndexReturn].arrival_time - a[1][0].departure_time
+            const secondReturn =b[1][BlastIndexReturn].arrival_time - b[1][0].departure_time
+            return Math.max(firstReturn, firstOutBound) - Math.max(secondReturn, secondOutBound)
+          })
+          break
             default:
               break;
           }
+
+          const {minTime, maxTime} = getMinMaxTimeWithReturn(trips)
+          const {minDepartureTime, maxDepartureTime} = getMinMaxDepartureTimeWithReturn(trips)
+          return {
+            trips:trips,
+            minTime,
+            maxTime,
+            minDepartureTime,
+            maxDepartureTime
+  
+  
+           }
         } catch (error) {
           throw new HttpException('недостаточно данных', HttpStatus.BAD_REQUEST);
         }
@@ -201,8 +246,13 @@ export class TripService {
        try {
 
         let resultTrips:Trip[][] = []
+   
+        const time = query.time ? query.time.split('%2C') :  []
+        const departureTimeFiltr = query.departureTimeFiltr ? query.departureTimeFiltr.split('%2C') :  []
+        const stops:StopValue[] = query.stops ? query.stops.split('%2C') as StopValue[] : []
         const departTime = dayjs(+departDate)
-         
+        console.log('time', time, departureTimeFiltr);
+        
  
         let departureTrips = await this.TripRepo.find({
             where:{
@@ -270,8 +320,38 @@ export class TripService {
           default:
             break;
         }
+
+
         const {minTime, maxTime} = getMinMaxTime(resultTrips)
         const {minDepartureTime, maxDepartureTime} = getMinMaxDepartureTime(resultTrips)
+
+        if (departureTimeFiltr.length !== 0) {
+          resultTrips = [...resultTrips.filter(el=>{
+            const tripDepartTime = dayjs(+el[0].departure_time).minute() +  (dayjs(+el[0].departure_time).hour() * 60)
+            console.log('tripDepartTime', tripDepartTime);
+            
+            return tripDepartTime >= +departureTimeFiltr[0]  && tripDepartTime <= +departureTimeFiltr[1]
+          })]
+        }
+
+
+        if (time.length !== 0) {
+          resultTrips = [...resultTrips.filter(el=>{
+            const tripTime = +el[el.length - 1].arrival_time - +el[0].departure_time
+
+            
+            return tripTime >= +time[0]  && tripTime <= +time[1]
+          })]
+        }
+
+        if (stops.length !== 0) {
+          if(stops.includes('direct')) resultTrips = [...resultTrips.filter(el=>el.length !== 1)]
+          if(stops.includes('oneTransfer')) resultTrips = [...resultTrips.filter(el=>el.length !== 2)]
+          if(stops.includes('twoTransfer')) resultTrips = [...resultTrips.filter(el=>el.length <= 2)]
+      
+        }
+        
+
         return {
           trips:resultTrips,
           minTime,
@@ -284,6 +364,7 @@ export class TripService {
 
        } catch (error) {
  
+        console.log('error',error.message);
         
         throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
        }

@@ -42,29 +42,83 @@ export const getRandomElementFromArray=(arr:any[])=> {
 
 
 export const getMinMaxTime = (trips:Trip[][])=>{
-  let minTime = trips[0][0].arrival_time -  trips[0][0].departure_time
-  let maxTime = trips[0][0].arrival_time -  trips[0][0].departure_time
+  let minTime = +trips[0][0].arrival_time -  +trips[0][0].departure_time
+  let maxTime = +trips[0][0].arrival_time -  +trips[0][0].departure_time
 
   trips.forEach(el=>{
-    minTime = Math.min(minTime, el[el.length - 1].arrival_time - el[0].departure_time)
-    maxTime = Math.max(maxTime, el[el.length - 1].arrival_time - el[0].departure_time)
+    minTime = Math.min(minTime, +el[el.length - 1].arrival_time - +el[0].departure_time)
+    maxTime = Math.max(maxTime, +el[el.length - 1].arrival_time - +el[0].departure_time)
   })
   return {minTime, maxTime}
 }
 
+
+
 export const getMinMaxDepartureTime = (trips:Trip[][])=>{
-  let minDepartureTime = trips[0][0].departure_time
-  let maxDepartureTime = trips[0][0].departure_time
+  let { hour: minHour, minute: minMinute } = getTimeParts(+trips[0][0].departure_time);
+  let { hour: maxHour, minute: maxMinute } = getTimeParts(+trips[0][0].departure_time);
 
-  trips.forEach(el=>{
-    if (dayjs(el[0].departure_time).isBefore(dayjs(minDepartureTime),'minutes')) {
-      minDepartureTime = el[0].departure_time
+  trips.forEach(ms=>{
+    const { hour, minute } = getTimeParts(+ms[0].departure_time);
+
+    if (hour < minHour || (hour === minHour && minute < minMinute)) {
+      minHour = hour;
+      minMinute = minute;
     }
 
-    if (dayjs(el[0].departure_time).isAfter(dayjs(maxDepartureTime),'minutes')) {
-      maxDepartureTime = el[0].departure_time
+    if (hour > maxHour || (hour === maxHour && minute > maxMinute)) {
+      maxHour = hour;
+      maxMinute = minute;
     }
+
+
 
   })
-  return {minDepartureTime, maxDepartureTime}
+  console.log(minHour  + minMinute, maxMinute + maxHour );
+  
+
+  return {minDepartureTime:(minHour * 60 )+ minMinute, maxDepartureTime:maxMinute + (maxHour * 60)}
 }
+
+
+export const getMinMaxTimeWithReturn = (trips:[Trip[], Trip[]][])=>{
+  let minTime = +trips[0][0][0].arrival_time -  +trips[0][0][0].departure_time
+  let maxTime = +trips[0][0][0].arrival_time -  +trips[0][0][0].departure_time
+
+  trips.forEach(el=>{
+    minTime = Math.min(minTime, +el[0][el[0].length - 1].arrival_time - +el[0][0].departure_time)
+    maxTime = Math.max(maxTime, +el[0][el[0].length - 1].arrival_time - +el[0][0].departure_time)
+  })
+  return {minTime, maxTime}
+}
+
+export const getMinMaxDepartureTimeWithReturn = (trips:[Trip[], Trip[]][])=>{
+  let { hour: minHour, minute: minMinute } = getTimeParts(+trips[0][0][0].departure_time);
+  let { hour: maxHour, minute: maxMinute } = getTimeParts(+trips[0][0][0].departure_time);
+
+  trips.forEach(ms=>{
+    const { hour, minute } = getTimeParts(+ms[0][0].departure_time);
+
+    if (hour < minHour || (hour === minHour && minute < minMinute)) {
+      minHour = hour;
+      minMinute = minute;
+    }
+
+    if (hour > maxHour || (hour === maxHour && minute > maxMinute)) {
+      maxHour = hour;
+      maxMinute = minute;
+    }
+
+
+
+  })
+  console.log(minHour  + minMinute, maxMinute + maxHour );
+  
+
+  return {minDepartureTime:(minHour * 60 )+ minMinute, maxDepartureTime:maxMinute + (maxHour * 60)}
+}
+
+const getTimeParts = (ms) => {
+  const date = dayjs(ms);
+  return { hour: date.hour(), minute: date.minute() };
+};
